@@ -10,51 +10,16 @@
 #include <assert.h>
 
 /******************************
-Device: GTX 690
+Device: GTX 1070
 ===============================
-N_ELEMS: 2^22
+N_ELEMS: 2^21
 Cutoff count: 1,000
 
-*******************************
-Type: Structure of Array
-
-- for 2 to Cutoff, for 0 to ELEM_PER_POINT
--------------------------------
-ELEM_PER_POINT: 2^2 ~ 2^5
-Run time: 8~10ms
--------------------------------
-ELEM_PER_POINT: >= 2^6
-Run time: >= 3000~3300ms
-
-- for 0 to ELEM_PER_POINT, for 2 to cutoff
--------------------------------
-ELEM_PER_POINT: 2^2 ~ 2^6
-Run time: 60~80ms
--------------------------------
-ELEM_PER_POINT: >= 2^7
-Run time: 80~100ms
-
-*******************************
-Type: Array of Structure
-
-- for 0 to ELEM_PER_POINT, for 2 to cutoff
--------------------------------
-ELEM_PER_POINT: 2^2 ~ 2^6
-Run time: 60~80ms
--------------------------------
-ELEM_PER_POINT: >= 2^7
-Run time: 80~100ms
-
-- for 2 to cutoff, for 0 to ELEM_PER_POINT
--------------------------------
-ELEM_PER_POINT: 2^2 ~ 2^6
-Run time: 120~160ms
--------------------------------
-ELEM_PER_POINT: >= 2^7
-Run time: 
 ******************************/
 #define ELEM_PER_POINT				(1 << 5)
-#define N_ELEMS						(1 << 22)
+#define N_ELEM_LOG					(21)
+
+#define N_ELEMS						(1 << N_ELEM_LOG)
 #define N_POINTS					(N_ELEMS / ELEM_PER_POINT)
 
 #define ARRAY_2D_WIDTH				1024
@@ -186,7 +151,7 @@ void transform_points_AOS( INOUT POINT_ELEMENT *p_AOS, IN int n_points, IN int m
 
 	float elapsedTime;
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("*** Array of structure: GPU Time taken = %.3fms\n", elapsedTime);
+	printf("*** Array of structure - E:%d N:%d B:(%d,%d) M:global : GPU Time taken = %.3fms\n", ELEM_PER_POINT, N_ELEM_LOG, BLOCK_HEIGHT, BLOCK_WIDTH, elapsedTime);
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 	
@@ -229,7 +194,7 @@ void transform_points_SOA( INOUT POINTS_SOA p_SOA, IN int n_points, IN int m )
 
 	float elapsedTime;
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("*** structure of Array: GPU Time taken = %.3fms\n", elapsedTime);
+	printf("*** structure of Array - E:%d N:%d B:(%d,%d) M:global : GPU Time taken = %.3fms\n", ELEM_PER_POINT, N_ELEM_LOG, BLOCK_HEIGHT, BLOCK_WIDTH, elapsedTime);
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
@@ -268,7 +233,7 @@ void transform_points_AOS_with_constant( INOUT POINT_ELEMENT *p_AOS, IN int n_po
 
 	float elapsedTime;
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("*** Array of structure: GPU Time taken = %.3fms\n", elapsedTime);
+	printf("*** Array of structure - E:%d N:%d B:(%d,%d) M:constant : GPU Time taken = %.3fms\n", ELEM_PER_POINT, N_ELEM_LOG, BLOCK_HEIGHT, BLOCK_WIDTH, elapsedTime);
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
@@ -310,7 +275,7 @@ void transform_points_SOA_with_constant( INOUT POINTS_SOA p_SOA, IN int n_points
 
 	float elapsedTime;
 	cudaEventElapsedTime(&elapsedTime, start, stop);
-	printf("*** structure of Array: GPU Time taken = %.3fms\n", elapsedTime);
+	printf("*** structure of Array - E:%d N:%d B:(%d,%d) M:constant : GPU Time taken = %.3fms\n", ELEM_PER_POINT, N_ELEM_LOG, BLOCK_HEIGHT, BLOCK_WIDTH, elapsedTime);
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 }
